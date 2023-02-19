@@ -43,9 +43,8 @@ export function use(puppeteer) {
 		});
 	}
 
-	app.get('/', cors(), async (request, response) => {
-		res = "Hello World!";
-		response.send(res);
+	app.get('/', cors(), (request, response) => {
+		response.send("Hello World!");
 	});
 
 	app.post('/', cors(), async (request, response) => {
