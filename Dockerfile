@@ -2,6 +2,7 @@ FROM buildkite/puppeteer:latest
 LABEL org.opencontainers.image.source https://github.com/ccjmne/puppeteer-html2pdf
 
 # https://github.com/Yelp/dumb-init
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 RUN apt-get update && apt-get install -y dumb-init
 
 WORKDIR /app/build
