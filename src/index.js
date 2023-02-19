@@ -43,9 +43,9 @@ export function use(puppeteer) {
 		});
 	}
 
-	app.get('/', cors(), (request, response) => {
-		response.send("Hello World!");
-	});
+	// app.get('/', cors(), (request, response) => {
+	// 	response.send("Hello World!");
+	// });
 
 	app.post('/', cors(), async (request, response) => {
 		const browser = await launchBrowser();
@@ -77,7 +77,7 @@ export function use(puppeteer) {
 
 	app.post('/render', cors(), async (request, response) => {
 		const browser = await launchBrowser();
-		const res = await renderPage({ url: request.body, browser });
+		const res = await renderPage({ url: request.body.url, browser });
 		await browser.close();
 		response.send(res);
 	});
