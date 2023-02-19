@@ -18,70 +18,85 @@ app.use(booleanParser());
 app.use(numberParser());
 
 async function print({ browser, htmlContents, options }) {
-  const page = await browser.newPage();
-  await page.setContent(htmlContents, { waitUntil: 'networkidle0' });
-  return page.pdf(options);
+	const page = await browser.newPage();
+	await page.setContent(htmlContents, { waitUntil: 'networkidle0' });
+	return page.pdf(options);
+}
+
+async function renderPage({ browser, url }) {
+	const page = await browser.newPage();
+	await page.goto(url, { waitUntil: 'networkidle0' });
+	await page.waitFor(2000);
+	return await page.evaluate(() => document.documentElement.outerHTML);
 }
 
 function parseRequest(request) {
-  const { groups: { filename } } = (request.query.filename || 'document').match(/^(?<filename>.+?)(?:\.pdf)?$/);
-  return { filename, options: { format: 'a4', landscape: false, printBackground: true, ...request.query, path: null } }; // discard potential `path` parameter
+	const { groups: { filename } } = (request.query.filename || 'document').match(/^(?<filename>.+?)(?:\.pdf)?$/);
+	return { filename, options: { format: 'a4', landscape: false, printBackground: true, ...request.query, path: null } }; // discard potential `path` parameter
 }
 
 export function use(puppeteer) {
-  function launchBrowser() {
-    return puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-  }
+	function launchBrowser() {
+		return puppeteer.launch({
+			headless: true,
+			args: ['--no-sandbox', '--disable-setuid-sandbox']
+		});
+	}
 
-  app.post('/', cors(), async (request, response) => {
-    const browser = await launchBrowser();
-    const { filename, options } = parseRequest(request);
-    const res = await print({ htmlContents: request.body, browser, options });
-    await browser.close();
-    response.attachment(`${filename}.pdf`).send(res);
-  });
+	app.post('/', cors(), async (request, response) => {
+		const browser = await launchBrowser();
+		const { filename, options } = parseRequest(request);
+		const res = await print({ htmlContents: request.body, browser, options });
+		await browser.close();
+		response.attachment(`${filename}.pdf`).send(res);
+	});
 
-  app.post('/multiple', cors(), async (request, response) => {
-    const browser = await launchBrowser();
-    const { filename, options } = parseRequest(request);
-    const files = await Promise.all(request.body.pages.map(htmlContents => {
-      const { name: path, removeCallback: rm } = tmp.fileSync();
-      return print({ htmlContents, browser, options: { ...options, path: path } }).then(() => ({ path, rm }));
-    }));
 
-    const res = files.reduce((merged, { path, rm }) => {
-      merged.addPagesOf(new pdf.ExternalDocument(fs.readFileSync(path)));
-      rm();
-      return merged;
-    }, new pdf.Document());
+	app.post('/multiple', cors(), async (request, response) => {
+		const browser = await launchBrowser();
+		const { filename, options } = parseRequest(request);
+		const files = await Promise.all(request.body.pages.map(htmlContents => {
+			const { name: path, removeCallback: rm } = tmp.fileSync();
+			return print({ htmlContents, browser, options: { ...options, path: path } }).then(() => ({ path, rm }));
+		}));
 
-    await browser.close();
-    const buffer = await res.asBuffer();
-    response.attachment(`${filename}.pdf`).send(buffer);
-  });
+		const res = files.reduce((merged, { path, rm }) => {
+			merged.addPagesOf(new pdf.ExternalDocument(fs.readFileSync(path)));
+			rm();
+			return merged;
+		}, new pdf.Document());
 
-  app.options('/*', cors());
+		await browser.close();
+		const buffer = await res.asBuffer();
+		response.attachment(`${filename}.pdf`).send(buffer);
+	});
 
-  /**
-   * Error-handling middleware always takes **four** arguments.
-   *
-   * You must provide four arguments to identify it as an error-handling middleware function.
-   * Even if you don’t need to use the next object, you must specify it to maintain the signature.
-   * Otherwise, the next object will be interpreted as regular middleware and will fail to handle errors.
-   * For details about error-handling middleware, see: https://expressjs.com/en/guide/error-handling.html.
-   */
-  app.use((err, _, response, __) => {
-    response.status(500).send(err.stack);
-  });
+	app.post('/render', cors(), async (request, response) => {
+		const browser = await launchBrowser();
+		const res = await renderPage({ url: request.body, browser });
+		await browser.close();
+		response.send(res);
+	});
 
-  app.listen(port, (err) => {
-    if (err) {
-      return console.error('ERROR: ', err);
-    }
+	app.options('/*', cors());
 
-    console.log(`HTML to PDF converter listening on port: ${port}`);
-  });
+	/**
+	 * Error-handling middleware always takes **four** arguments.
+	 *
+	 * You must provide four arguments to identify it as an error-handling middleware function.
+	 * Even if you don’t need to use the next object, you must specify it to maintain the signature.
+	 * Otherwise, the next object will be interpreted as regular middleware and will fail to handle errors.
+	 * For details about error-handling middleware, see: https://expressjs.com/en/guide/error-handling.html.
+	 */
+	app.use((err, _, response, __) => {
+		response.status(500).send(err.stack);
+	});
+
+	app.listen(port, (err) => {
+		if (err) {
+			return console.error('ERROR: ', err);
+		}
+
+		console.log(`HTML to PDF converter GG listening on port: ${port}`);
+	});
 }
