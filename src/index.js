@@ -101,6 +101,6 @@ export function use(puppeteer) {
 			return console.error('ERROR: ', err);
 		}
 
-		console.log(`HTML to PDF converter GG listening on port: ${port}`);
+		console.log(`HTML to PDF converter GG listening on port: ${port} v1.0.1`);
 	});
 }
