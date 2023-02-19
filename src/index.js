@@ -43,6 +43,11 @@ export function use(puppeteer) {
 		});
 	}
 
+	app.get('/', cors(), async (request, response) => {
+		res = "Hello World!";
+		response.send(res);
+	});
+
 	app.post('/', cors(), async (request, response) => {
 		const browser = await launchBrowser();
 		const { filename, options } = parseRequest(request);

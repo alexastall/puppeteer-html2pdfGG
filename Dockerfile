@@ -1,5 +1,5 @@
 FROM buildkite/puppeteer:latest
-LABEL org.opencontainers.image.source https://github.com/ccjmne/puppeteer-html2pdf
+LABEL org.opencontainers.image.source https://github.com/alexastall/puppeteer-html2pdfGG
 
 # https://github.com/Yelp/dumb-init
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -

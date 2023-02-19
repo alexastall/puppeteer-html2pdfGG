@@ -1,5 +1,5 @@
 {
-  "name": "puppeteer-html2pdf",
+  "name": "puppeteer-html2pdfgg",
   "version": "1.4.2",
   "description": "Print your HTML to PDF via Puppeteer in a Docker container. It's all in the repo name 👌",
   "main": "src/index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ccjmne/puppeteer-html2pdf.git"
+    "url": "git+https://github.com/alexastall/puppeteer-html2pdfGG.git"
   },
   "keywords": [
     "html",
