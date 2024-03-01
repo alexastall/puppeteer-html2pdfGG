@@ -26,7 +26,7 @@ async function print({ browser, htmlContents, options }) {
 async function renderPage({ browser, url }) {
 	const page = await browser.newPage();
 	await page.goto(url, { waitUntil: 'networkidle0' });
-	await page.waitFor(2000);
+	await page.waitFor(500);
 	return await page.evaluate(() => document.documentElement.outerHTML);
 }
 
